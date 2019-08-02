@@ -4,6 +4,8 @@
 #include "ModulesApp.h"
 #include "MooseSyntax.h"
 
+#include "ReactionRateAux.h"
+
 template <>
 InputParameters
 validParams<woodpeckerApp>()

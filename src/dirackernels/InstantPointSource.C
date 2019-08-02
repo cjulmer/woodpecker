@@ -51,7 +51,7 @@ InstantPointSource::addPoints()
 Real
 InstantPointSource::computeQpResidual()
 {
-  if ( (_time >= (_t-_dt)) && (_time < (_t)) )
+  if ((_time >= (_t - _dt)) && (_time < (_t)))
   {
     //  This is negative because it's a forcing function that has been brought over to the left side
     return -_test[_i][_qp] * _value / _dt;

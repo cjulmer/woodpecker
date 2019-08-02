@@ -7,22 +7,25 @@
 //* Licensed under LGPL 2.1, please see LICENSE for details
 //* https://www.gnu.org/licenses/lgpl-2.1.html
 
-#ifndef GAUSSIANHEATSOURCE_H
-#define GAUSSIANHEATSOURCE_H
+#ifndef RANDOMHEATSOURCE_H
+#define RANDOMHEATSOURCE_H
 
-#include "Kernel.h"
+#include "DiracKernel.h"
+#include "RandomInterface.h"
 
 // Forward Declarations
-class GaussianHeatSource;
+class RandomHeatSource;
 
 template <>
-InputParameters validParams<GaussianHeatSource>();
+InputParameters validParams<RandomHeatSource>();
 
-class GaussianHeatSource : public Kernel
+class RandomHeatSource : public DiracKernel,
+                         public RandomInterface
 {
 public:
-  GaussianHeatSource(const InputParameters & parameters);
+  RandomHeatSource(const InputParameters & parameters);
 protected:
+  virtual void addPoints() override;
   virtual Real computeQpResidual() override;
 
   Real _specific_heat;
@@ -33,6 +36,11 @@ protected:
   Real _time;
 
   Real _b;
+
+  Real r1;
+  Real r2;
+  Real r3;
+  std::fstream fout;
 };
 
 #endif
