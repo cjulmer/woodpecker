@@ -7,13 +7,13 @@
 //* Licensed under LGPL 2.1, please see LICENSE for details
 //* https://www.gnu.org/licenses/lgpl-2.1.html
 
-#include "PackedColumn.h"
+#include "MCtest.h"
 
-registerMooseObject("DarcyThermoMechApp", PackedColumn);
+registerMooseObject("woodpeckerApp", MCtest);
 
 template <>
 InputParameters
-validParams<PackedColumn>()
+validParams<MCtest>()
 {
   InputParameters params = validParams<Material>();
 
@@ -27,7 +27,7 @@ validParams<PackedColumn>()
   return params;
 }
 
-PackedColumn::PackedColumn(const InputParameters & parameters)
+MCtest::MCtest(const InputParameters & parameters)
   : Material(parameters),
 
     // Get the one parameter from the input file
@@ -38,21 +38,18 @@ PackedColumn::PackedColumn(const InputParameters & parameters)
     _permeability(declareProperty<Real>("permeability")),
     _viscosity(declareProperty<Real>("viscosity"))
 {
-  // From the paper: Table 1
-  std::vector<Real> sphere_sizes = {1, 3};
-  std::vector<Real> permeability = {0.8451e-9, 8.968e-9};
+  setRandomResetFrequency(EXEC_TIMESTEP_BEGIN);
+}
 
-  // Set the x,y data on the LinearInterpolation object.
-  _permeability_interpolation.setData(sphere_sizes, permeability);
-
-  // The _sphere_radius is a constant, so we can compute the
-  // interpolated permeability once as well.
-  _interpolated_permeability = _permeability_interpolation.sample(_sphere_radius);
+Real
+MCtest::getRandom()
+{
+  random_number = getRandomReal();
+  return random_number;
 }
 
 void
-PackedColumn::computeQpProperties()
+MCtest::computeQpProperties()
 {
-  _viscosity[_qp] = 7.98e-4; // (Pa*s) Water at 30 degrees C (Wikipedia)
-  _permeability[_qp] = _interpolated_permeability;
+  return;
 }

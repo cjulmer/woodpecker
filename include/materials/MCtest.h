@@ -7,18 +7,15 @@
 //* Licensed under LGPL 2.1, please see LICENSE for details
 //* https://www.gnu.org/licenses/lgpl-2.1.html
 
-#ifndef PACKEDCOLUMN_H
-#define PACKEDCOLUMN_H
+#ifndef MCTEST_H
+#define MCTEST_H
 
 #include "Material.h"
 
-// A helper class from MOOSE that linear interpolates x,y data
-#include "LinearInterpolation.h"
-
-class PackedColumn;
+class MCtest;
 
 template <>
-InputParameters validParams<PackedColumn>();
+InputParameters validParams<MCtest>();
 
 /**
  * Material objects inherit from Material and override computeQpProperties.
@@ -26,10 +23,11 @@ InputParameters validParams<PackedColumn>();
  * Their job is to declare properties for use by other objects in the
  * calculation such as Kernels and BoundaryConditions.
  */
-class PackedColumn : public Material
+class MCtest : public Material
 {
 public:
-  PackedColumn(const InputParameters & parameters);
+  MCtest(const InputParameters & parameters);
+  Real getRandom();
 
 protected:
   /**
@@ -38,11 +36,7 @@ protected:
    */
   virtual void computeQpProperties() override;
 
-  /// The radius of the spheres in the column
-  const Real & _sphere_radius;
-
-  /// Based on the paper this will
-  LinearInterpolation _permeability_interpolation;
+  Real _sphere_radius;
 
   /// The permeability (K)
   MaterialProperty<Real> & _permeability;
@@ -50,10 +44,7 @@ protected:
   /// The viscosity of the fluid (mu)
   MaterialProperty<Real> & _viscosity;
 
-  /// Single value to store the interpolated permeability base on
-  /// sphere size.  The _sphere_radius is assumed to be constant, so
-  /// we only have to compute this once.
-  Real _interpolated_permeability;
+  Real random_number;
 };
 
-#endif // PACKEDCOLUMN_H
+#endif // MCtest_H

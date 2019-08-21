@@ -15,8 +15,8 @@ template <>
 InputParameters
 validParams<RandomHeatSource>()
 {
-  InputParameters params = validParams<DiracKernel>();
-  params += validParams<RandomInterface>();
+  InputParameters params = validParams<Kernel>();
+  // params += validParams<RandomInterface>();
 
   params.addRequiredParam<Real>("specific_heat", "Specific heat of the material");
   params.addRequiredParam<Real>("density_name", "Density of the material");
@@ -28,25 +28,27 @@ validParams<RandomHeatSource>()
 }
 
 RandomHeatSource::RandomHeatSource(const InputParameters & parameters)
-  : DiracKernel(parameters),
-    RandomInterface(parameters,
-                    *parameters.getCheckedPointerParam<FEProblemBase *>("_fe_problem_base"),
-                    parameters.get<THREAD_ID>("_tid"),
-                    false),
+  : Kernel(parameters),
+    // RandomInterface(parameters,
+    //                *parameters.getCheckedPointerParam<FEProblemBase *>("_fe_problem_base"),
+    //                parameters.get<THREAD_ID>("_tid"),
+    //                false),
     _specific_heat(getParam<Real>("specific_heat")),
     _density(getParam<Real>("density_name")),
     _delta_T_max(getParam<Real>("delta_T_max")),
     _energy(getParam<Real>("energy")),
     _point(getParam<std::vector<Real>>("point")),
-    _time(getParam<Real>("time"))
+    _time(getParam<Real>("time")),
+    _t_now(-1.0),
+    _dt_now(-1.0)
 {
   fout.open("test.txt");
   fout.close();
-  setRandomResetFrequency(EXEC_TIMESTEP_BEGIN);
-  _b = std::sqrt(_energy / (2*3.14159265359*_density*_specific_heat*_delta_T_max));
+  setRandomResetFrequency(EXEC_LINEAR);
+  _b = std::sqrt(_energy / (2 * 3.14159265359 * _density * _specific_heat * _delta_T_max));
 }
 
-void
+/*void
 RandomHeatSource::addPoints()
 {
   r1 = getRandomReal();
@@ -56,17 +58,30 @@ RandomHeatSource::addPoints()
   fout << _t << " " << r1 << " " << r2 << " " << r2 << " " << getRandomReal() << "\n";
   fout.close();
   return;
-}
+}*/
 
 Real
 RandomHeatSource::computeQpResidual()
 {
+  if (_t != _t_now || _dt != _dt_now)
+  {
+    fout.open("test.txt", std::ofstream::out | std::ofstream::app);
+    fout << _t << " " << _dt << "\n";
+    fout << "     " << getRandomReal() << "\n";
+    fout.close();
+    _t_now = _t;
+    _dt_now = _dt;
+  }
+
   if (_time >= (_t - _dt) && _time < _t)
   {
     Point p = _q_point[_qp];
     Real x = _q_point[_qp](0);
     Real y = _q_point[_qp](1);
-    Real factor = _specific_heat*_density*_delta_T_max * std::exp(-((_point[0]-x)*(_point[0]-x)+(_point[1]-y)*(_point[1]-y))/(2*_b*_b));
+    Real factor =
+        _specific_heat * _density * _delta_T_max *
+        std::exp(-((_point[0] - x) * (_point[0] - x) + (_point[1] - y) * (_point[1] - y)) /
+                 (2 * _b * _b));
     return _test[_i][_qp] * -factor / _dt;
   }
   else
