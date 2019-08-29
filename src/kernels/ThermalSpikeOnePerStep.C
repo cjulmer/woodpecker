@@ -1,29 +1,17 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
-//* Licensed under LGPL 2.1, please see LICENSE for details
-//* https://www.gnu.org/licenses/lgpl-2.1.html
-
-#include "HackedRandomHeatSource.h"
+#include "ThermalSpikeOnePerStep.h"
 
 // static initialization
-Real HackedRandomHeatSource::_t_now = -1.0;
-Real HackedRandomHeatSource::_dt_now = -1.0;
-std::vector<Real> HackedRandomHeatSource::_point;
-// std::mutex HackedRandomHeatSource::_lock;
+Real ThermalSpikeOnePerStep::_t_now = -1.0;
+Real ThermalSpikeOnePerStep::_dt_now = -1.0;
+std::vector<Real> ThermalSpikeOnePerStep::_point;
 
-registerMooseObject("woodpeckerApp", HackedRandomHeatSource);
+registerMooseObject("woodpeckerApp", ThermalSpikeOnePerStep);
 
 template <>
 InputParameters
-validParams<HackedRandomHeatSource>()
+validParams<ThermalSpikeOnePerStep>()
 {
   InputParameters params = validParams<Kernel>();
-  // params += validParams<RandomInterface>();
-
   params.addRequiredParam<Real>("specific_heat", "Specific heat of the material");
   params.addRequiredParam<Real>("density_name", "Density of the material");
   params.addRequiredParam<Real>("delta_T_max", "Maximum temperature increase due to thermal spike");
@@ -33,12 +21,8 @@ validParams<HackedRandomHeatSource>()
   return params;
 }
 
-HackedRandomHeatSource::HackedRandomHeatSource(const InputParameters & parameters)
+ThermalSpikeOnePerStep::ThermalSpikeOnePerStep(const InputParameters & parameters)
   : Kernel(parameters),
-    // RandomInterface(parameters,
-    //                *parameters.getCheckedPointerParam<FEProblemBase *>("_fe_problem_base"),
-    //                parameters.get<THREAD_ID>("_tid"),
-    //                false),
     _specific_heat(getParam<Real>("specific_heat")),
     _density(getParam<Real>("density_name")),
     _delta_T_max(getParam<Real>("delta_T_max")),
@@ -54,16 +38,12 @@ HackedRandomHeatSource::HackedRandomHeatSource(const InputParameters & parameter
 }
 
 Real
-HackedRandomHeatSource::computeQpResidual()
+ThermalSpikeOnePerStep::computeQpResidual()
 {
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   int size;
   MPI_Comm_size(MPI_COMM_WORLD, &size);
-
-  // fout << "Process " << rank << " before" << "\n";
-  // fout << "  t " << _t << " : " << _t_now << "\n";
-  // fout << "  dt " << _dt << " : " << _dt_now << "\n";
 
   if (_t != _t_now || _dt != _dt_now)
   {
@@ -86,9 +66,7 @@ HackedRandomHeatSource::computeQpResidual()
     }
     _t_now = _t;
     _dt_now = _dt;
-    // MPI_Barrier(MPI_COMM_WORLD);
-    fout << "Process " << rank << " after"
-         << "\n";
+    fout << "Process " << rank << " after" << "\n";
     fout << "  t " << _t << " : " << _t_now << "\n";
     fout << "  dt " << _dt << " : " << _dt_now << "\n";
     for (auto point : _point)
@@ -96,29 +74,7 @@ HackedRandomHeatSource::computeQpResidual()
     fout.close();
   }
 
-  /*
-  fout.open("test.txt", std::ofstream::out | std::ofstream::app);
-  fout << _t << " " << _t_now << "\n";
-  fout << _dt << " " << _dt_now << "\n";
-  if (_t != _t_now || _dt != _dt_now)
-  {
-    std::lock_guard<std::mutex> lock(_lock);
-    fout << "     " << _t << " " << _t_now << "\n";
-    fout << "     " << _dt << " " << _dt_now << "\n";
-    if (_t != _t_now || _dt != _dt_now)
-    {
-      setRandomData();
-      _t_now = _t;
-      _dt_now = _dt;
-    }
-    fout << "          " << _t << " " << _t_now << "\n";
-    fout << "          " << _dt << " " << _dt_now << "\n";
-  }
-  fout.close();
-  */
-
   // if (_time >= (_t - _dt) && _time < _t)
-  //{
   Point p = _q_point[_qp];
   Real x = _q_point[_qp](0);
   Real y = _q_point[_qp](1);
@@ -126,34 +82,17 @@ HackedRandomHeatSource::computeQpResidual()
                 std::exp(-((_point[0] - x) * (_point[0] - x) + (_point[1] - y) * (_point[1] - y)) /
                          (2 * _b * _b));
   return _test[_i][_qp] * -factor / _dt;
-  //}
-  // else
-  //{
-  //  return 0;
-  //}
 }
 
 void
-HackedRandomHeatSource::setRandomData()
+ThermalSpikeOnePerStep::setRandomData()
 {
-  // fout.open("test.txt", std::ofstream::out | std::ofstream::app);
-  // fout << _t << " " << _dt << "\n";
-
   _point.resize(0);
   for (auto i = 1; i < 3; ++i)
   {
     Real val = getRandomReal();
-    //  fout << "    " << val << "\n";
     val *= 20.0;
-    //  fout << "    " << val << "\n";
     _point.push_back(val);
-    //  fout << "    " << _point.back() << "\n";
-    //  _point.push_back(getRandomReal()*20.0);
   }
-  //  for (auto item : _point)
-  //{
-  // fout << "        " << item << "\n";
-  //}
-  // fout.close();
   return;
 }
