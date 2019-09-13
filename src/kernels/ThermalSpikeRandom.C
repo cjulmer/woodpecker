@@ -30,7 +30,7 @@ ThermalSpikeRandom::ThermalSpikeRandom(const InputParameters & parameters)
   fout.close();
   _dim = 2;
 
-  _point.resize(2,10.0);
+  _point.resize(2, 10.0);
   _t_now = -1.0;
   _dt_now = -1.0;
 
@@ -58,7 +58,7 @@ ThermalSpikeRandom::computeQpResidual()
   if (_t != _t_now || _dt != _dt_now)
   {
     fout.open("test.txt", std::ofstream::out | std::ofstream::app);
-    //MPI_Barrier(MPI_COMM_WORLD);
+    // MPI_Barrier(MPI_COMM_WORLD);
     if (size > 1)
     {
       int data_size;
@@ -66,7 +66,7 @@ ThermalSpikeRandom::computeQpResidual()
       {
         if (_spikes.empty())
         {
-          _spikes.push_back(getSpikeInterval()+_initiation_time);
+          _spikes.push_back(getSpikeInterval() + _initiation_time);
         }
         while (_spikes.size() > 1)
         {
@@ -74,42 +74,43 @@ ThermalSpikeRandom::computeQpResidual()
         }
         while (_spikes.back() <= _t)
         {
-          _spikes.push_back(_spikes.back()+getSpikeInterval());
+          _spikes.push_back(_spikes.back() + getSpikeInterval());
         }
 
         _points.resize(0);
         for (auto i = 0; i < (_spikes.size() - 1) * _dim; ++i)
         {
-          _points.push_back(getRandomReal()*20.0);
+          _points.push_back(getRandomReal() * 20.0);
         }
         data_size = _points.size();
-        MPI_Bcast(&data_size,1,MPI_INT,0,MPI_COMM_WORLD);
+        MPI_Bcast(&data_size, 1, MPI_INT, 0, MPI_COMM_WORLD);
         MPI_Bcast(_points.data(), _points.size(), MPI_DOUBLE, 0, MPI_COMM_WORLD);
       }
       else
       {
-        MPI_Bcast(&data_size,1,MPI_INT,0,MPI_COMM_WORLD);
+        MPI_Bcast(&data_size, 1, MPI_INT, 0, MPI_COMM_WORLD);
         _points.resize(data_size);
         MPI_Bcast(_points.data(), _points.size(), MPI_DOUBLE, 0, MPI_COMM_WORLD);
       }
     }
     else
     {
-      //setRandomData();
+      // setRandomData();
     }
     _t_now = _t;
     _dt_now = _dt;
-    fout << "Process " << rank << " after" << "\n";
+    fout << "Process " << rank << " after"
+         << "\n";
     fout << "  t " << _t << " : " << _t_now << "\n";
     fout << "  dt " << _dt << " : " << _dt_now << "\n";
     if (rank == 0)
     {
-      for (auto i = 0; i < (_spikes.size()-1); ++i)
+      for (auto i = 0; i < (_spikes.size() - 1); ++i)
       {
         fout << "    " << _spikes[i];
         for (auto j = 0; j < _dim; ++j)
         {
-          fout << " " << _points[i*_dim+j];
+          fout << " " << _points[i * _dim + j];
         }
         fout << "\n";
       }
@@ -130,12 +131,13 @@ ThermalSpikeRandom::computeQpResidual()
   Real factor = 0;
   Real x = _q_point[_qp](0);
   Real y = _q_point[_qp](1);
-  for (auto i = 0; i < _points.size()/_dim; ++i)
+  for (auto i = 0; i < _points.size() / _dim; ++i)
   {
     // point[0] = _points[i*_dim]
     // point[1] = _points[i*_dim+1]
-    factor += std::exp(-((_points[i*_dim] - x) * (_points[i*_dim] - x)
-        + (_points[i*_dim+1] - y) * (_points[i*_dim+1] - y)) / (2 * _b * _b));
+    factor += std::exp(-((_points[i * _dim] - x) * (_points[i * _dim] - x) +
+                         (_points[i * _dim + 1] - y) * (_points[i * _dim + 1] - y)) /
+                       (2 * _b * _b));
   }
   return _test[_i][_qp] * -factor / _dt * _specific_heat * _density * _delta_T_max;
 
@@ -165,5 +167,5 @@ ThermalSpikeRandom::setRandomData()
 Real
 ThermalSpikeRandom::getSpikeInterval()
 {
-  return - std::log(1.0 - getRandomReal()) / _spike_rate;
+  return -std::log(1.0 - getRandomReal()) / _spike_rate;
 }

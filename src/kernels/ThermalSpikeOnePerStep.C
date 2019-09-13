@@ -66,7 +66,8 @@ ThermalSpikeOnePerStep::computeQpResidual()
     }
     _t_now = _t;
     _dt_now = _dt;
-    fout << "Process " << rank << " after" << "\n";
+    fout << "Process " << rank << " after"
+         << "\n";
     fout << "  t " << _t << " : " << _t_now << "\n";
     fout << "  dt " << _dt << " : " << _dt_now << "\n";
     for (auto point : _point)
