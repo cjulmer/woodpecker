@@ -15,12 +15,12 @@ validParams<EventTimerRandom>()
 
 EventTimerRandom::EventTimerRandom(const InputParameters & parameters)
   : EventTimerBase(parameters),
-  _mesh(_fe_problem.mesh()),
-  _event_rate(getParam<Real>("event_rate")),
-  _seed(getParam<int>("seed"))
+    _mesh(_fe_problem.mesh()),
+    _event_rate(getParam<Real>("event_rate")),
+    _seed(getParam<int>("seed"))
 {
   // Seed the random number generator
-  _random.seed(0,_seed);
+  _random.seed(0, _seed);
 
   // Initialize the events queue
   _events.resize(0);
@@ -41,8 +41,8 @@ void
 EventTimerRandom::execute()
 {
   //_debug.open("Event.txt", std::ofstream::out | std::ofstream::app);
-  //int rank;
-  //MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  // int rank;
+  // MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   //_debug << "     Timer: execute " << rank << " " << _t << " " << _dt << "\n";
 
   // delete events that are no longer used
@@ -54,7 +54,7 @@ EventTimerRandom::execute()
   // add new events for time step
   while (_events.back() < _t)
   {
-    _events.push_back(_events.back()+nextInterval());
+    _events.push_back(_events.back() + nextInterval());
   }
 
   //_debug.close();

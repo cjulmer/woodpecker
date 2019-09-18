@@ -8,7 +8,8 @@ InputParameters
 validParams<EventPlacerBase>()
 {
   InputParameters params = validParams<GeneralUserObject>();
-  params.addRequiredParam<UserObjectName>("event_timer", "The name of the event timer User Object.");
+  params.addRequiredParam<UserObjectName>("event_timer",
+                                          "The name of the event timer User Object.");
 
   params.set<ExecFlagEnum>("execute_on") = EXEC_TIMESTEP_BEGIN;
 
@@ -17,7 +18,7 @@ validParams<EventPlacerBase>()
 
 EventPlacerBase::EventPlacerBase(const InputParameters & parameters)
   : GeneralUserObject(parameters),
-  _mesh(_fe_problem.mesh()),
-  _timer(getUserObject<EventTimerBase>("event_timer"))
+    _mesh(_fe_problem.mesh()),
+    _timer(getUserObject<EventTimerBase>("event_timer"))
 {
 }

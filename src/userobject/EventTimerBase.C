@@ -18,7 +18,7 @@ validParams<EventTimerBase>()
 
 EventTimerBase::EventTimerBase(const InputParameters & parameters)
   : GeneralUserObject(parameters),
-  _random(declareRestartableData<MooseRandom>("random_generator")),
-  _first_event(getParam<Real>("start_time"))
+    _random(declareRestartableData<MooseRandom>("random_generator")),
+    _first_event(getParam<Real>("start_time"))
 {
 }

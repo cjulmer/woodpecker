@@ -16,12 +16,14 @@ validParams<EventPlacerRandom>()
 
 EventPlacerRandom::EventPlacerRandom(const InputParameters & parameters)
   : EventPlacerBase(parameters),
-  _random(declareRestartableData<MooseRandom>("random_generator")),
-  _seed(getParam<int>("seed")),
-  _inactive(getParam<Real>("buffer_dimension"))
+    _random(declareRestartableData<MooseRandom>("random_generator")),
+    _seed(getParam<int>("seed")),
+    _inactive(getParam<Real>("buffer_dimension"))
 {
   // Seed the random number generator
-  _random.seed(0,_seed);
+  _random.seed(0, _seed);
+  _random.saveState();
+  _t_old = 0.0;
 
   // Get mesh size properties
   _x_size = _mesh.dimensionWidth(0);
@@ -32,19 +34,25 @@ EventPlacerRandom::EventPlacerRandom(const InputParameters & parameters)
   _z0 = _mesh.getMinInDimension(2);
 
   // Modify domain size for inactive region
-  _x_size -= 2.0*_inactive;
-  _y_size -= 2.0*_inactive;
-  _z_size -= 2.0*_inactive;
+  if (_z_size > 0.0)
+  {
+    _z_size -= 2.0 * _inactive;
+    _z0 += _inactive;
+  }
+  if (_y_size > 0.0)
+  {
+    _y_size -= 2.0 * _inactive;
+    _y0 += _inactive;
+  }
+  _x_size -= 2.0 * _inactive;
   _x0 += _inactive;
-  _y0 += _inactive;
-  _z0 += _inactive;
 
   // Reset debug file
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   if (rank == 0)
   {
-    _debug.open("Event.txt", std::ofstream::out);
+    _debug.open("Placer.txt", std::ofstream::out);
     _debug.close();
   }
 }
@@ -52,6 +60,14 @@ EventPlacerRandom::EventPlacerRandom(const InputParameters & parameters)
 void
 EventPlacerRandom::execute()
 {
+  if (_t <= _t_old)
+  {
+    _random.restoreState();
+  }
+  _t_old = _t;
+  _random.saveState();
+
+  /*
   _event_times = _timer.getActiveEvents();
   _event_locations.resize(0);
   for (auto event = 0; event < _event_times.size(); ++event)
@@ -63,7 +79,7 @@ EventPlacerRandom::execute()
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   if (rank == 0)
   {
-    _debug.open("Event.txt", std::ofstream::out | std::ofstream::app);
+    _debug.open("Placer.txt", std::ofstream::out | std::ofstream::app);
     _debug << "     Placer: execute " << _t << " " << _dt << "\n";
     for (auto event = 0; event < _event_times.size(); ++event)
     {
@@ -76,16 +92,27 @@ EventPlacerRandom::execute()
     }
     _debug.close();
   }
+  */
 }
 
 std::vector<std::vector<Real>>
 EventPlacerRandom::getEventLocations() const
 {
-    return _event_locations;
+  return _event_locations;
 }
 
 std::vector<Real>
 EventPlacerRandom::getNewPoint() const
+{
+  std::vector<Real> point;
+  point.push_back(_x0 + _random.rand(0) * _x_size);
+  point.push_back(_y0 + _random.rand(0) * _y_size);
+  point.push_back(_z0 + _random.rand(0) * _z_size);
+  return point;
+}
+
+std::vector<Real>
+EventPlacerRandom::getPoint() const
 {
   std::vector<Real> point;
   point.push_back(_x0 + _random.rand(0) * _x_size);

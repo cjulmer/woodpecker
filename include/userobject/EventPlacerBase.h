@@ -17,6 +17,7 @@ public:
   EventPlacerBase(const InputParameters & parameters);
 
   virtual std::vector<std::vector<Real>> getEventLocations() const = 0;
+  virtual std::vector<Real> getPoint() const = 0;
 
 protected:
   MooseMesh & _mesh;
