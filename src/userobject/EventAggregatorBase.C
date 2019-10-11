@@ -8,8 +8,10 @@ InputParameters
 validParams<EventAggregatorBase>()
 {
   InputParameters params = validParams<GeneralUserObject>();
-  params.addRequiredParam<UserObjectName>("event_timer","The name of the event timer User Object.");
-  params.addRequiredParam<UserObjectName>("event_placer","The name of the event placer User Object.");
+  params.addRequiredParam<UserObjectName>("event_timer",
+                                          "The name of the event timer User Object.");
+  params.addRequiredParam<UserObjectName>("event_placer",
+                                          "The name of the event placer User Object.");
 
   params.set<ExecFlagEnum>("execute_on") = EXEC_TIMESTEP_BEGIN;
 
