@@ -27,11 +27,17 @@ SpikeTimer::SpikeTimer(const InputParameters & parameters)
     _seed(getParam<int>("seed")),
     _inactive(getParam<Real>("buffer_dimension"))
 {
+
+  // Reset debug file
+  MPI_Comm_rank(MPI_COMM_WORLD, &_rank);
+  if (_rank == 0)
+  {
+    _debug.open("SpikeTimer.txt", std::ofstream::out);
+    _debug.close();
+  }
+
   // Seed the random number generator
   _random.seed(0, _seed);
-
-  // Set the first event
-  _spikes.push_back(getSpike());
 
   // Get mesh size properties
   _x_size = _mesh.dimensionWidth(0);
@@ -55,23 +61,31 @@ SpikeTimer::SpikeTimer(const InputParameters & parameters)
   _x_size -= 2.0 * _inactive;
   _x0 += _inactive;
 
-  // Reset debug file
-  MPI_Comm_rank(MPI_COMM_WORLD, &_rank);
-  if (_rank == 0)
-  {
-    _debug.open("SpikeTimer.txt", std::ofstream::out);
-    _debug.close();
-  }
+  // Set the first event
+  _spikes.push_back(getSpike());
+
 }
 
 void
 SpikeTimer::execute()
 {
+  //_debug.open("SpikeTimer.txt", std::ofstream::out | std::ofstream::app);
+  //_debug << "     rank " << _rank << "     " << _dt << "     " << _t << "\n";
 
-  if (_spikes.back().getTime() < _t)
+  while (_spikes.front().getTime() < (_t - _dt))
   {
+    _spikes.pop_front();
+  }
+
+  while (_spikes.back().getTime() < _t)
+  {
+    //_debug << "          rank " << _rank << " last " << _spikes.back().getTime() << "\n";
     _spikes.push_back(getSpike());
   }
+
+  std::vector<SphericalSpike> temp = getActiveSpikes();
+  //_debug << "          rank " << _rank << " last " << _spikes.back().getTime() << "\n";
+  //_debug.close();
   /*
   _spike_times = _timer.getActiveEvents();
   _spike_locations.resize(0);
@@ -99,7 +113,7 @@ SpikeTimer::execute()
     }
     _debug.close();
   }
-
+  */
   /*
   _event_times = _timer.getActiveEvents();
   _event_locations.resize(0);
@@ -121,7 +135,8 @@ SpikeTimer::getSpike()
     if (_first_spike < (_t - _dt))
     {
       // something has gone wrong!
-      _debug << "ERROR: trying to create initial spike at time " << _first_spike << " when timestep ranges from " << (_t - _dt) << " to " << _t << " !\n";
+      _debug << "ERROR: trying to create initial spike at time " << _first_spike
+             << " when timestep ranges from " << (_t - _dt) << " to " << _t << " !\n";
     }
     else
     {
@@ -145,7 +160,7 @@ SpikeTimer::getSpike()
     _debug.close();
   }
 
-  return SphericalSpike(spikeTime,spikeEnergy,spikePoint);
+  return SphericalSpike(spikeTime, spikeEnergy, spikePoint);
 }
 
 Real
@@ -163,5 +178,38 @@ SpikeTimer::getEnergy()
 Point
 SpikeTimer::getPoint()
 {
-  return Point(_x0 + _random.rand(0) * _x_size,_y0 + _random.rand(0) * _y_size,_z0 + _random.rand(0) * _z_size);
+  return Point(_x0 + _random.rand(0) * _x_size,
+               _y0 + _random.rand(0) * _y_size,
+               _z0 + _random.rand(0) * _z_size);
+}
+
+std::vector<SphericalSpike>
+SpikeTimer::getActiveSpikes() const
+{
+  std::vector<SphericalSpike> spikes;
+  for (auto i = 0; i < _spikes.size(); ++i)
+  {
+    if (_spikes[i].getTime() < _t && _spikes[i].getTime() >= (_t - _dt))
+    {
+      spikes.push_back(_spikes[i]);
+    }
+  }
+  if (_rank == 0)
+  {
+    //_debug.open("SpikeTimer.txt", std::ofstream::out | std::ofstream::app);
+    for (auto i = 0; i < spikes.size(); ++i)
+    {
+      //_debug << "     " << spikes[i].getTime() << "     " << spikes[i].getEnergy() << "     ";
+      //_debug << spikes[i].getLocation()(0) << "     ";
+      //_debug << spikes[i].getLocation()(1) << "     " << spikes[i].getLocation()(2) << "\n";
+    }
+    //_debug.close();
+  }
+  return spikes;
+}
+
+Real
+SpikeTimer::getNextSpike() const
+{
+  return _spikes.back().getTime();
 }

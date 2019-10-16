@@ -8,15 +8,15 @@
 class RandomTestSub
 {
 public:
-  //RandomTestSub() {};
+  // RandomTestSub() {};
   RandomTestSub(MooseRandom &);
+
 protected:
   MooseRandom & _random;
   std::fstream _debug;
 };
 
-RandomTestSub::RandomTestSub(MooseRandom & input)
-  : _random(input)
+RandomTestSub::RandomTestSub(MooseRandom & input) : _random(input)
 {
   _debug.open("Random2.txt", std::ofstream::out | std::ofstream::app);
   for (auto i = 0; i < 3; ++i)

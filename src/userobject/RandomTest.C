@@ -15,8 +15,7 @@ validParams<RandomTest>()
 }
 
 RandomTest::RandomTest(const InputParameters & parameters)
-  : GeneralUserObject(parameters),
-    _random(declareRestartableData<MooseRandom>("random_generator"))
+  : GeneralUserObject(parameters), _random(declareRestartableData<MooseRandom>("random_generator"))
 {
   // Seed the random number generator
   _random.seed(0, 3);
@@ -55,5 +54,4 @@ RandomTest::execute()
     }
     //_debug.close();
   }
-
 }

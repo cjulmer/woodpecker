@@ -8,8 +8,8 @@
 class SphericalSpike
 {
 public:
-  SphericalSpike (Real time, Real energy, Real x, Real y = 0.0, Real z = 0.0);
-  SphericalSpike (Real time, Real energy, Point location);
+  SphericalSpike(Real time, Real energy, Real x, Real y = 0.0, Real z = 0.0);
+  SphericalSpike(Real time, Real energy, Point location);
 
   Real getTime() const;
   Real getEnergy() const;

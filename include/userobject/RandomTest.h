@@ -15,9 +15,9 @@ class RandomTest : public GeneralUserObject
 public:
   RandomTest(const InputParameters & parameters);
 
-  virtual void initialize () override {};
-  virtual void finalize () override {};
-  virtual void execute () override;
+  virtual void initialize() override{};
+  virtual void finalize() override{};
+  virtual void execute() override;
 
 protected:
   MooseRandom & _random;

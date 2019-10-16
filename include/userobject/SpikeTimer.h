@@ -9,7 +9,7 @@ class SpikeTimer;
 class MooseRandom;
 class MooseMesh;
 class SphericalSpike;
-//class deque;
+// class deque;
 
 template <>
 InputParameters validParams<SpikeTimer>();
@@ -19,17 +19,19 @@ class SpikeTimer : public GeneralUserObject
 public:
   SpikeTimer(const InputParameters & parameters);
 
-  virtual void initialize() override {};
-  virtual void finalize() override {};
+  virtual void initialize() override{};
+  virtual void finalize() override{};
   virtual void execute() override;
 
-  std::vector<SphericalSpike> getActiveEvents() const;
+  std::vector<SphericalSpike> getActiveSpikes() const;
+  Real getNextSpike() const;
 
 protected:
   SphericalSpike getSpike();
   Real getInterval();
   Real getEnergy();
   Point getPoint();
+  //std::vector<SphericalSpike> getActiveSpikes();
 
   MooseRandom & _random;
   MooseMesh & _mesh;

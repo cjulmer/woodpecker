@@ -3,6 +3,7 @@
 #include "EventTimerBase.h"
 #include "EventPlacerBase.h"
 
+
 template <>
 InputParameters
 validParams<EventAggregatorBase>()
