@@ -24,14 +24,14 @@ public:
   virtual void execute() override;
 
   std::vector<SphericalSpike> getActiveSpikes() const;
-  Real getNextSpike() const;
+  Real getNextSpike(Real ) const;
 
 protected:
   SphericalSpike getSpike();
   Real getInterval();
   Real getEnergy();
   Point getPoint();
-  //std::vector<SphericalSpike> getActiveSpikes();
+  // std::vector<SphericalSpike> getActiveSpikes();
 
   MooseRandom & _random;
   MooseMesh & _mesh;

@@ -2,7 +2,7 @@
 
 #include "SpikeTimer.h"
 
-registerMooseObject("woodpeckerApp",SpikeStepper);
+registerMooseObject("woodpeckerApp", SpikeStepper);
 
 template <>
 InputParameters
@@ -10,20 +10,13 @@ validParams<SpikeStepper>()
 {
   InputParameters params = validParams<TimeStepper>();
   params.addRequiredParam<Real>("dt", "The initial timestep");
-  //params.addParam<std::vector<Real>>("time_t", "The values of t");
-  //params.addParam<std::vector<Real>>("time_dt", "The values of dt");
-  params.addParam<Real>("growth_factor",
-                        2.0,
-                        "Factor to apply to timestep if easy convergence");
-  params.addParam<Real>("cutback_factor",
-                        0.5,
-                        "Factor to apply to timestep if solution failed");
-  params.addParam<Real>("spike_dt",
-                        1.0e-5,
-                        "Timestep for thermal spike");
-  params.addRequiredParam<UserObjectName>("spike_timer",
-                        "Thermal spike timer User Object");
-  //params.declareControllable("growth_factor cutback_factor");
+  // params.addParam<std::vector<Real>>("time_t", "The values of t");
+  // params.addParam<std::vector<Real>>("time_dt", "The values of dt");
+  params.addParam<Real>("growth_factor", 2.0, "Factor to apply to timestep if easy convergence");
+  params.addParam<Real>("cutback_factor", 0.5, "Factor to apply to timestep if solution failed");
+  params.addParam<Real>("spike_dt", 1.0e-5, "Timestep for thermal spike");
+  params.addRequiredParam<UserObjectName>("spike_timer", "Thermal spike timer User Object");
+  // params.declareControllable("growth_factor cutback_factor");
   return params;
 }
 
@@ -50,7 +43,7 @@ SpikeStepper::computeInitialDT()
 {
   Real new_dt = _input_dt;
 
-  Real next_spike = _spike_timer.getNextSpike();
+  Real next_spike = _spike_timer.getNextSpike(_time);
 
   if (next_spike < (_time + new_dt))
   {
@@ -88,7 +81,7 @@ SpikeStepper::computeDT()
     _debug.close();
   }*/
 
-  Real next_spike = _spike_timer.getNextSpike();
+  Real next_spike = _spike_timer.getNextSpike(_time);
 
   if (next_spike < (_time + new_dt))
   {

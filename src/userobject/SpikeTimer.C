@@ -63,7 +63,6 @@ SpikeTimer::SpikeTimer(const InputParameters & parameters)
 
   // Set the first event
   _spikes.push_back(getSpike());
-
 }
 
 void
@@ -209,7 +208,14 @@ SpikeTimer::getActiveSpikes() const
 }
 
 Real
-SpikeTimer::getNextSpike() const
+SpikeTimer::getNextSpike(Real time_check) const
 {
+  for (auto i = 0; i < _spikes.size(); ++i)
+  {
+    if (_spikes[i].getTime() > time_check)
+    {
+      return _spikes[i].getTime();
+    }
+  }
   return _spikes.back().getTime();
 }

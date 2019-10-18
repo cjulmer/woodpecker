@@ -99,7 +99,19 @@ ThermalSpikeRandom::computeQpResidual()
     }
     _t_now = _t;
     _dt_now = _dt;
-    fout << "Process " << rank << " after"
+    if (rank == 0)
+    {
+      for (auto i = 0; i < (_spikes.size() - 1); ++i)
+      {
+        fout <<  _spikes[i];
+        for (auto j = 0; j < _dim; ++j)
+        {
+          fout << " " << _points[i * _dim + j];
+        }
+        fout << "\n";
+      }
+    }
+    /*fout << "Process " << rank << " after"
          << "\n";
     fout << "  t " << _t << " : " << _t_now << "\n";
     fout << "  dt " << _dt << " : " << _dt_now << "\n";
@@ -124,7 +136,7 @@ ThermalSpikeRandom::computeQpResidual()
     {
       fout << " " << _points[i];
     }
-    fout << "\n";
+    fout << "\n";*/
     fout.close();
   }
 
